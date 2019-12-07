@@ -7,7 +7,7 @@ include common.mk
 # TODO(b/112485400): Fix all compiler warnings and delete this line.
 CXXFLAGS += -w
 
-CXX_BINARY(nvt-tcon-fw-updater): main.o
+CXX_BINARY(nvt-tcon-fw-updater): src/main.o
 nvt-tcon-fw-updater: CXX_BINARY(nvt-tcon-fw-updater)
 clean: CLEAN(CXX_BINARY(nvt-tcon-fw-updater))
 all: CXX_BINARY(nvt-tcon-fw-updater)
