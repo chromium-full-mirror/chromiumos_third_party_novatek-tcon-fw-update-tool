@@ -4,8 +4,8 @@
 #define DEBUG_LOG 0
 #include "NVTAuxCtrl.h"
 #include "NVTSettingProc.h"
-#include "NVTAuxCtrl.c"
-#include "NVTSettingProc.c"
+#include "NVTAuxCtrl.cc"
+#include "NVTSettingProc.cc"
 #include "TconOperation.h"
 
 /**************************************************************************************************/
