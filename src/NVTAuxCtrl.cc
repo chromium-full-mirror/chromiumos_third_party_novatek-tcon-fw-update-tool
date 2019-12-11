@@ -13,6 +13,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "NVTAuxCtrl.h"
+#include "NVTSettingProc.h"
 
 NVTAUX_STATUS NVTAUX_Open()
 {

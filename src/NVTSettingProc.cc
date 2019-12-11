@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "NVTAuxCtrl.h"
 #include "NVTSettingProc.h"
 
 INIT_STATUS LoadIni(char* path,bool RomPathEn, char* romPath)
