@@ -31,7 +31,11 @@
 #define UPDATE_FAIL 3
 #define READ_CODE_FAIL 4
 
-const char* tool_version = "V0.1.0.10";
+static const char* tool_version = "V0.1.0.10";
+
+// this is limited by i2c device nmsgs and FW limit
+static const int oneWriteSize[] = {0,   32,  64,  64,  128, 128, 128, 256, 256,
+                                   256, 256, 256, 256, 256, 256, 256, 256};
 
 int main(int argc, char* argv[]) {
   struct timeval t1, t2;

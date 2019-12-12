@@ -12,13 +12,7 @@
 
 #define MAX_AUX_REQUEST_BYTE 16
 
-int fpNativeAux, fpI2CoverAux;
-const int oneWriteSize[17] = {
-    0,   32,  64,  64,  128, 128, 128, 256, 256,
-    256, 256, 256, 256, 256, 256, 256, 256};  // this is limited by i2c device
-                                              // nmsgs and FW limite
-
-struct NvtAuxConfig {
+extern struct NvtAuxConfig {
   uint m_AuxRequestByte;  // must consider with transistion length because
                           // I2C_RDWR_IOCTL_MAX_MSGS = 42
 } auxConfig;

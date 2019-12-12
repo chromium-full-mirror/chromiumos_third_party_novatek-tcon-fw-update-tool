@@ -12,6 +12,21 @@
 
 #include "NVTAuxCtrl.h"
 
+UCHAR* m_GoldenBuf;
+struct GraphicConfig gConfig;
+
+static const char* configItem[CONFIG_ITEMS] = {
+    "TCON_ADDR",
+    "EEPROM_ADDR",
+    "EEPROM_SIZE",
+    "AUX_REQUEST_BYTE",
+    "FLASH_SECTOR_ERASE_TIME",
+    "FLASH_PAGE_PROG_TIME",
+    "FLASH_WRITE_STATUS_REG",
+    "PATH",
+    "DEVICE_TYPE",
+};
+
 INIT_STATUS LoadIni(char* path, bool RomPathEn, char* romPath) {
   size_t returVal;
 

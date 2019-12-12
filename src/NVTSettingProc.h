@@ -15,9 +15,9 @@
 #define CONFIG_ITEMS 9
 #define ROM_PATH_LEN_LIMIT 1024
 
-UCHAR* m_GoldenBuf;
+extern UCHAR* m_GoldenBuf;
 
-struct GraphicConfig {
+extern struct GraphicConfig {
   // must maintain the struct item order
   UCHAR m_TCON_ADDR;
   UCHAR m_EEPROM_ADDR;
@@ -29,18 +29,6 @@ struct GraphicConfig {
   char* m_GoldenFilePath;
   UINT m_DpInterface;
 } gConfig;
-
-const char* configItem[CONFIG_ITEMS] = {
-    "TCON_ADDR",
-    "EEPROM_ADDR",
-    "EEPROM_SIZE",
-    "AUX_REQUEST_BYTE",
-    "FLASH_SECTOR_ERASE_TIME",
-    "FLASH_PAGE_PROG_TIME",
-    "FLASH_WRITE_STATUS_REG",
-    "PATH",
-    "DEVICE_TYPE",
-};
 
 typedef enum _init_status {
   INIT_STATUS_OK = 0,

@@ -17,6 +17,9 @@
 
 #include "NVTSettingProc.h"
 
+int fpNativeAux, fpI2CoverAux;
+struct NvtAuxConfig auxConfig;
+
 NVTAUX_STATUS NVTAUX_Open() {
   // search target DP interface
 
