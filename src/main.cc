@@ -10,9 +10,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #define DEBUG_LOG 0
-#include "NVTAuxCtrl.cc"
 #include "NVTAuxCtrl.h"
-#include "NVTSettingProc.cc"
 #include "NVTSettingProc.h"
 #include "TconOperation.h"
 
