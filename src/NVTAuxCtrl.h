@@ -6,37 +6,45 @@
 
 #ifndef AUXCTRLLIB_H_INCLUDED
 #define AUXCTRLLIB_H_INCLUDED
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
 #define MAX_AUX_REQUEST_BYTE 16
 
-int fpNativeAux,fpI2CoverAux;
-const int oneWriteSize[17] = {0,32,64,64,128,128,128,256,256,256,256,256,256,256,256,256,256}; //this is limited by i2c device nmsgs and FW limite
+int fpNativeAux, fpI2CoverAux;
+const int oneWriteSize[17] = {
+    0,   32,  64,  64,  128, 128, 128, 256, 256,
+    256, 256, 256, 256, 256, 256, 256, 256};  // this is limited by i2c device
+                                              // nmsgs and FW limite
 
-struct NvtAuxConfig
-{
-    uint m_AuxRequestByte; // must consider with transistion length because I2C_RDWR_IOCTL_MAX_MSGS = 42
-}auxConfig;
+struct NvtAuxConfig {
+  uint m_AuxRequestByte;  // must consider with transistion length because
+                          // I2C_RDWR_IOCTL_MAX_MSGS = 42
+} auxConfig;
 
-typedef enum _native_aux_operation
-{
-    NATIVE_AUX_WRITE = 0,
-    NATIVE_AUX_READ = 1,
+typedef enum _native_aux_operation {
+  NATIVE_AUX_WRITE = 0,
+  NATIVE_AUX_READ = 1,
 } NATIVE_AUX_OPERATION;
 
-typedef enum _nvtaux_status
-{
-    AUX_STATUS_OK = 0,
-    AUX_STATUS_FAIL = -1,
-    AUX_STATUS_ERR_PARAM = -2,
-}NVTAUX_STATUS;
+typedef enum _nvtaux_status {
+  AUX_STATUS_OK = 0,
+  AUX_STATUS_FAIL = -1,
+  AUX_STATUS_ERR_PARAM = -2,
+} NVTAUX_STATUS;
 
 NVTAUX_STATUS NVTAUX_Open();
 NVTAUX_STATUS NVTAUX_Close();
-NVTAUX_STATUS NVTAUX_NativeAuxAccess(unsigned int op, unsigned int dpcdAddr, unsigned int len, unsigned char * buf);
-NVTAUX_STATUS NVTAUX_I2COverAuxWrite(unsigned int devAddr, unsigned int wrLen, unsigned char * wrBuf);
-NVTAUX_STATUS NVTAUX_I2COverAuxRead(unsigned int devAddr, unsigned int rdLen, unsigned char * rdBuf);
-NVTAUX_STATUS NVTAUX_I2COverAuxBurstRead(unsigned int devAddr, unsigned int wrLen, unsigned char * wrBuf, unsigned int rdLen, unsigned char * rdBuf);
-#endif // AUXCTRLLIB_H_INCLUDED
+NVTAUX_STATUS NVTAUX_NativeAuxAccess(unsigned int op, unsigned int dpcdAddr,
+                                     unsigned int len, unsigned char* buf);
+NVTAUX_STATUS NVTAUX_I2COverAuxWrite(unsigned int devAddr, unsigned int wrLen,
+                                     unsigned char* wrBuf);
+NVTAUX_STATUS NVTAUX_I2COverAuxRead(unsigned int devAddr, unsigned int rdLen,
+                                    unsigned char* rdBuf);
+NVTAUX_STATUS NVTAUX_I2COverAuxBurstRead(unsigned int devAddr,
+                                         unsigned int wrLen,
+                                         unsigned char* wrBuf,
+                                         unsigned int rdLen,
+                                         unsigned char* rdBuf);
+#endif  // AUXCTRLLIB_H_INCLUDED
