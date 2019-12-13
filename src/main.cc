@@ -319,11 +319,16 @@ TCON_OPERATION_STATUS ReadAndSaveRomcode() {
     status = NVTAUX_I2COverAuxBurstRead(slvAddr, 2, wBuf, one_wr_size, rBuf);
     if (status != AUX_STATUS_OK) {
       printf("Read Rom code fail\n");
-      NVTAUX_Close();
       fclose(fp);
+      NVTAUX_Close();
       return TCON_ACC_STATUS_FAIL;
     }
-    fwrite(rBuf, one_wr_size, 1, fp);
+    if (fwrite(rBuf, one_wr_size, 1, fp) < 1) {
+      printf("Writing Rom code to file failed\n");
+      fclose(fp);
+      NVTAUX_Close();
+      return TCON_ACC_STATUS_FAIL;
+    }
   }
 
   ProgressPrintf(buf_size, buf_size);
@@ -337,19 +342,17 @@ TCON_OPERATION_STATUS ReadAndSaveRomcode() {
 void Flash_FW_Protect_Key(void) {
   unsigned char fw_prt_key[5] = {0xFF, 0x3C, 0xC3, 0xAA, 0x55};
   unsigned int slvAddr = gConfig.m_EEPROM_ADDR;
-  int status;
 
-  status = NVTAUX_I2COverAuxWrite(slvAddr, 5, fw_prt_key);
+  NVTAUX_I2COverAuxWrite(slvAddr, 5, fw_prt_key);
 }
 
 void Flash_Write_Status_Reg_Key(BYTE ucStatus) {
   unsigned char fw_prt_key[3] = {0xFF, 0x01, 0x00};
   unsigned int slvAddr = gConfig.m_EEPROM_ADDR;
-  int status;
 
   fw_prt_key[2] = ucStatus;
 
-  status = NVTAUX_I2COverAuxWrite(slvAddr, 3, fw_prt_key);
+  NVTAUX_I2COverAuxWrite(slvAddr, 3, fw_prt_key);
 
   if (ucStatus) {
     fw_prt_key[0] = 0xFF;
@@ -367,8 +370,7 @@ void ProgressPrintf(UINT addr, UINT totalSize) {
   printf(">");
   for (int i = progress; i < 40; i++) printf(" ");
   int tmp = percent * 100;
-  // printf("]%d%,%f",tmp,percent);
-  printf("]%d%,%06X", tmp, addr);
+  printf("]%d%%,%06X", tmp, addr);
 
   fflush(stdout);
   if (percent >= 1) printf("\n");

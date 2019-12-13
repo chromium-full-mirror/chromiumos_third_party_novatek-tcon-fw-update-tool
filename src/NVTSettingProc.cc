@@ -6,6 +6,7 @@
 
 #include "NVTSettingProc.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,8 +29,6 @@ static const char* configItem[CONFIG_ITEMS] = {
 };
 
 INIT_STATUS LoadIni(char* path, bool RomPathEn, char* romPath) {
-  size_t returVal;
-
   printf("used mode:%s\n", path);
 
   // initialize config
@@ -39,6 +38,7 @@ INIT_STATUS LoadIni(char* path, bool RomPathEn, char* romPath) {
   char* line = NULL;
   FILE* fp = fopen(path, "r");
   size_t lineLen;
+  size_t size_ret;
 
   if (fp == NULL) {
     printf("can't open model file:%s\n", path);
@@ -77,23 +77,37 @@ INIT_STATUS LoadIni(char* path, bool RomPathEn, char* romPath) {
     return INIT_STATUS_FAIL;
   }
 
-  fseek(fp, 0, SEEK_END);
-  UINT fSize = ftell(fp);
+  if (fseek(fp, 0, SEEK_END) < 0) {
+    printf("error %d failed to seek on %s\n", errno, path);
+    fclose(fp);
+    return INIT_STATUS_FAIL;
+  }
+  long fSize = ftell(fp);
   if (fSize != gConfig.m_BufferSize) {
     printf("wrong Buffer Size\n");
+    fclose(fp);
     return INIT_STATUS_FAIL;
   }
   if ((gConfig.m_DpInterface < 2) || (gConfig.m_DpInterface > 3)) {
     printf("unknown DP Interface\n");
+    fclose(fp);
     return INIT_STATUS_FAIL;
   }
 
   // initialize
   if (m_GoldenBuf != NULL) delete m_GoldenBuf;
   m_GoldenBuf = new UCHAR[fSize];
-  fseek(fp, 0, SEEK_SET);
-  returVal = fread(m_GoldenBuf, fSize, 1, fp);
+  if (fseek(fp, 0, SEEK_SET) < 0) {
+    printf("error %d failed to seek on %s\n", errno, path);
+    fclose(fp);
+    return INIT_STATUS_FAIL;
+  }
+  size_ret = fread(m_GoldenBuf, fSize, 1, fp);
   fclose(fp);
+  if (size_ret < 1) {
+    printf("failed to read from m_GoldenBuf\n");
+    return INIT_STATUS_FAIL;
+  }
   auxConfig.m_AuxRequestByte = gConfig.m_AuxRequestByte;
 
   printf("NVT Setting Initialize Success\n");
@@ -177,8 +191,6 @@ void SetConfig(int item, char* inStr) {
         printf("DP Interface:external\n");
       } else
         printf("DP interface:unknown\n");
-
-    default:
       break;
   }
 }
