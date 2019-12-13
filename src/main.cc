@@ -4,6 +4,7 @@
 /*  found in the LICENSE file.                                              */
 /****************************************************************************/
 
+#include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,7 +50,7 @@ int main(int argc, char* argv[]) {
       // update code
       status = LoadIni(argv[1], false, paraRomPath);
       if (status != INIT_STATUS_OK) {
-        printf("load model file fail\n");
+        warnx("load model file fail");
         return LOAD_MODEL_INIT_FAIL;
       }
       gettimeofday(&t1, NULL);
@@ -66,7 +67,7 @@ int main(int argc, char* argv[]) {
       // read code
       status = LoadIni(argv[2], false, paraRomPath);
       if (status != INIT_STATUS_OK) {
-        printf("load model file fail\n");
+        warnx("load model file fail");
         return LOAD_MODEL_INIT_FAIL;
       }
       gettimeofday(&t1, NULL);
@@ -85,7 +86,7 @@ int main(int argc, char* argv[]) {
       status = LoadIni(argv[2], true, paraRomPath);
 
       if (status != INIT_STATUS_OK) {
-        printf("load model file fail\n");
+        warnx("load model file fail");
         return LOAD_MODEL_INIT_FAIL;
       }
       gettimeofday(&t1, NULL);
@@ -112,7 +113,7 @@ TCON_OPERATION_STATUS TCON_Init() {
   buf[0] = 0xC0;
   status = NVTAUX_NativeAuxAccess(NATIVE_AUX_WRITE, 0x00102, 1, buf);
   if (status != AUX_STATUS_OK) {
-    printf("Init TCON Fail(1.%d)\n", status);
+    warnx("Init TCON Fail(1.%d)", status);
     return TCON_ACC_STATUS_FAIL;
   }
   return TCON_ACC_STATUS_OK;
@@ -137,13 +138,13 @@ TCON_OPERATION_STATUS UpdateCode_WrAllChkAll_71870() {
   //*******************************************
   status = NVTAUX_Open();
   if (status != AUX_STATUS_OK) {
-    printf("Open DP fail\n");
+    warnx("Open DP fail");
     NVTAUX_Close();
     return TCON_ACC_STATUS_FAIL;
   }
   TCON_Init();
   if (status != TCON_ACC_STATUS_OK) {
-    printf("Init TCON fail\n");
+    warnx("Init TCON fail");
     NVTAUX_Close();
     return TCON_ACC_STATUS_FAIL;
   }
@@ -195,7 +196,7 @@ TCON_OPERATION_STATUS UpdateCode_WrAllChkAll_71870() {
       wBuf[j + 2] = m_GoldenBuf[i + j];
     status = NVTAUX_I2COverAuxWrite(slvAddr, one_wr_size + 2, wBuf);
     if (status != AUX_STATUS_OK) {
-      printf("\nWrite Fail\n");
+      warnx("\nWrite Fail");
       NVTAUX_Close();
       return TCON_ACC_STATUS_FAIL;
     }
@@ -206,15 +207,15 @@ TCON_OPERATION_STATUS UpdateCode_WrAllChkAll_71870() {
     wBuf[1] = fw_i2c_addr;
     status = NVTAUX_I2COverAuxBurstRead(slvAddr, 2, wBuf, one_wr_size, rBuf);
     if (status != AUX_STATUS_OK) {
-      printf("\nWrite fail\n");
+      warnx("\nWrite fail");
       NVTAUX_Close();
       return TCON_ACC_STATUS_FAIL;
     }
 
     for (unsigned int j = 0; j < one_wr_size; j++) {
       if (m_GoldenBuf[i + j] != rBuf[j]) {
-        printf("\nWrite fail at address 0x%06X, write:%02X <=> read:%02X\n", i,
-               m_GoldenBuf[i], rBuf[j]);
+        warnx("\nWrite fail at address 0x%06X, write:%02X <=> read:%02X", i,
+              m_GoldenBuf[i], rBuf[j]);
         NVTAUX_Close();
         return TCON_ACC_STATUS_FAIL;
       }
@@ -247,14 +248,14 @@ TCON_OPERATION_STATUS UpdateCode_WrAllChkAll_71870() {
     wBuf[1] = fw_i2c_addr;
     status = NVTAUX_I2COverAuxBurstRead(slvAddr, 2, wBuf, one_wr_size, rBuf);
     if (status != AUX_STATUS_OK) {
-      printf("\nVerify fail on reading\n");
+      warnx("\nVerify fail on reading");
       return TCON_ACC_STATUS_FAIL;
     }
 
     for (unsigned int j = 0; j < one_wr_size; j++) {
       if (m_GoldenBuf[i + j] != rBuf[j]) {
-        printf("\nVerify fail at address 0x%06X, write:%02X <=> read:%02X\n", i,
-               m_GoldenBuf[i], rBuf[j]);
+        warnx("\nVerify fail at address 0x%06X, write:%02X <=> read:%02X", i,
+              m_GoldenBuf[i], rBuf[j]);
         NVTAUX_Close();
         return TCON_ACC_STATUS_FAIL;
       }
@@ -285,18 +286,22 @@ TCON_OPERATION_STATUS ReadAndSaveRomcode() {
 
   status = NVTAUX_Open();
   if (status != AUX_STATUS_OK) {
-    printf("Open DP fail\n");
+    warnx("Open DP fail");
     NVTAUX_Close();
     return TCON_ACC_STATUS_FAIL;
   }
   TCON_Init();
   if (status != TCON_ACC_STATUS_OK) {
-    printf("Init TCON fail\n");
+    warnx("Init TCON fail");
     NVTAUX_Close();
     return TCON_ACC_STATUS_FAIL;
   }
 
   FILE* fp = fopen("readBackRom.bin", "wb");
+  if (fp == NULL) {
+    warn("can't open readBackRom.bin");
+    return TCON_ACC_STATUS_FAIL;
+  }
 
   printf("Reading......\n");
   ProgressPrintf(0, buf_size);
@@ -318,13 +323,13 @@ TCON_OPERATION_STATUS ReadAndSaveRomcode() {
 
     status = NVTAUX_I2COverAuxBurstRead(slvAddr, 2, wBuf, one_wr_size, rBuf);
     if (status != AUX_STATUS_OK) {
-      printf("Read Rom code fail\n");
+      warnx("Read Rom code fail");
       fclose(fp);
       NVTAUX_Close();
       return TCON_ACC_STATUS_FAIL;
     }
     if (fwrite(rBuf, one_wr_size, 1, fp) < 1) {
-      printf("Writing Rom code to file failed\n");
+      warnx("Writing Rom code to file failed");
       fclose(fp);
       NVTAUX_Close();
       return TCON_ACC_STATUS_FAIL;

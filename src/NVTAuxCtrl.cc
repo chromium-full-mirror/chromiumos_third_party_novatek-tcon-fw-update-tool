@@ -6,7 +6,7 @@
 
 #include "NVTAuxCtrl.h"
 
-#include <errno.h>
+#include <err.h>
 #include <fcntl.h>
 #include <linux/i2c-dev.h>
 #include <linux/i2c.h>
@@ -35,15 +35,13 @@ NVTAUX_STATUS NVTAUX_Open() {
         "find /sys/class/drm/*eDP*/drm_dp_aux* -maxdepth 0 | sed 's/.*\\///'",
         "r");
     if (fp == NULL) {
-      printf(
-          "Fail to get eDP interface - DpInt==2 drm_dp_aux* popen() failed\n");
+      warnx("Fail to get eDP interface - DpInt==2 drm_dp_aux* popen() failed");
       return AUX_STATUS_FAIL;
     }
     chrret = fgets(path, sizeof(path) - 1, fp);
     pclose(fp);
     if (!chrret) {
-      printf(
-          "Fail to get eDP interface - DpInt==2 drm_dp_aux* fgets() failed\n");
+      warnx("Fail to get eDP interface - DpInt==2 drm_dp_aux* fgets() failed");
       return AUX_STATUS_FAIL;
     }
 
@@ -55,13 +53,13 @@ NVTAUX_STATUS NVTAUX_Open() {
     fp = popen("find /sys/class/drm/*eDP*/i2c-* -maxdepth 0 | sed 's/.*\\///'",
                "r");
     if (fp == NULL) {
-      printf("Fail to get eDP interface - DpInt==2 i2c-* popen() failed\n");
+      warnx("Fail to get eDP interface - DpInt==2 i2c-* popen() failed");
       return AUX_STATUS_FAIL;
     }
     chrret = fgets(path, sizeof(path) - 1, fp);
     pclose(fp);
     if (!chrret) {
-      printf("Fail to get eDP interface - DpInt==2 i2c-* fgets() failed\n");
+      warnx("Fail to get eDP interface - DpInt==2 i2c-* fgets() failed");
       return AUX_STATUS_FAIL;
     }
 
@@ -79,7 +77,7 @@ NVTAUX_STATUS NVTAUX_Open() {
       openStat = open(path, O_RDONLY);
       if (openStat < 0) continue;
       if (close(openStat) < 0) {
-        printf("error %d failed when attempting to close %s\n", errno, path);
+        warn("failed when attempting to close %s", path);
         return AUX_STATUS_FAIL;
       }
 
@@ -87,19 +85,15 @@ NVTAUX_STATUS NVTAUX_Open() {
               path);
       fp = popen(pollingPath, "r");
       if (fp == NULL) {
-        printf(
-            "Fail to get eDP interface - DpInt==3 portNo==%d drm_dp_aux* "
-            "popen() failed\n",
-            portNo);
+        warnx("Fail to get eDP interface - DpInt==3 portNo==%d drm_dp_aux* "
+              "popen() failed", portNo);
         return AUX_STATUS_FAIL;
       }
       chrret = fgets(pollingPath, sizeof(pollingPath) - 1, fp);
       pclose(fp);
       if (!chrret) {
-        printf(
-            "Fail to get eDP interface - DpInt==3 portNo==%d drm_dp_aux* "
-            "fgets() failed\n",
-            portNo);
+        warnx("Fail to get eDP interface - DpInt==3 portNo==%d drm_dp_aux* "
+              "fgets() failed", portNo);
         return AUX_STATUS_FAIL;
       }
       sprintf(auxPath, "/dev/%s", pollingPath);
@@ -110,19 +104,15 @@ NVTAUX_STATUS NVTAUX_Open() {
       sprintf(pollingPath, "find %s/i2c* -maxdepth 0 | sed 's/.*\\///'", path);
       fp = popen(pollingPath, "r");
       if (fp == NULL) {
-        printf(
-            "Fail to get eDP interface - DpInt==3 portNo==%d i2c-* popen() "
-            "failed\n",
-            portNo);
+        warnx("Fail to get eDP interface - DpInt==3 portNo==%d i2c-* popen() "
+              "failed", portNo);
         return AUX_STATUS_FAIL;
       }
       chrret = fgets(pollingPath, sizeof(pollingPath) - 1, fp);
       pclose(fp);
       if (!chrret) {
-        printf(
-            "Fail to get eDP interface - DpInt==3 portNo==%d i2c-* fgets() "
-            "failed\n",
-            portNo);
+        warnx("Fail to get eDP interface - DpInt==3 portNo==%d i2c-* fgets() "
+              "failed", portNo);
         return AUX_STATUS_FAIL;
       }
       sprintf(i2cPath, "/dev/%s", pollingPath);
@@ -133,19 +123,19 @@ NVTAUX_STATUS NVTAUX_Open() {
       break;
     }
   } else {
-    printf("unknown DP Interface\n");
+    warnx("unknown DP Interface");
     return AUX_STATUS_FAIL;
   }
 
   // open Native aux device
   if ((fpNativeAux = open(auxPath, O_RDWR)) < 0) {
-    printf("open fpNativeAux device fail: %d\n", errno);
+    warn("open fpNativeAux device failed");
     return AUX_STATUS_FAIL;
   }
 
   // open I2CoverAux device
   if ((fpI2CoverAux = open(i2cPath, O_RDWR)) < 0) {
-    printf("open I2CoverAux device fail: %d\n", errno);
+    warn("open I2CoverAux device failed");
     return AUX_STATUS_FAIL;
   }
 
@@ -155,11 +145,11 @@ NVTAUX_STATUS NVTAUX_Open() {
 NVTAUX_STATUS NVTAUX_Close() {
   NVTAUX_STATUS retval = AUX_STATUS_OK;
   if (close(fpNativeAux) < 0) {
-    printf("error %d failed when attempting to close fpNativeAux\n", errno);
+    warn("failed when attempting to close fpNativeAux");
     retval = AUX_STATUS_FAIL;
   }
   if (close(fpI2CoverAux) < 0) {
-    printf("error %d failed when attempting to close fpI2CoverAux\n", errno);
+    warn("failed when attempting to close fpI2CoverAux");
     retval = AUX_STATUS_FAIL;
   }
   return retval;
@@ -252,14 +242,14 @@ NVTAUX_STATUS NVTAUX_I2COverAuxWrite(unsigned int devAddr, unsigned int wrLen,
 
   ret = ioctl(fpI2CoverAux, I2C_RDWR, (unsigned long)&i2c_data);
   if (ret < 0) {
-    printf("i2c write fail\n");
+    warnx("i2c write fail");
     return AUX_STATUS_FAIL;
   }
 #else
   // intel driver provided interface
   ret = write(fpI2CoverAux, wrBuf, wrLen);
   if (ret != wrLen) {
-    printf("i2c write fail\n");
+    warnx("i2c write fail");
     return AUX_STATUS_FAIL;
   }
 #endif  // 0
@@ -283,7 +273,7 @@ NVTAUX_STATUS NVTAUX_I2COverAuxRead(unsigned int devAddr, unsigned int rdLen,
   ret = ioctl(fpI2CoverAux, I2C_RDWR, (unsigned long)&i2c_data);
 
   if (ret < 0) {
-    printf("i2c read fail\n");
+    warnx("i2c read fail");
     return AUX_STATUS_FAIL;
   }
 
@@ -348,7 +338,7 @@ NVTAUX_STATUS NVTAUX_I2COverAuxBurstRead(unsigned int devAddr,
   ret = ioctl(fpI2CoverAux, I2C_RDWR, (unsigned long)&i2c_data);
 
   if (ret < 0) {
-    printf("i2c burst read fail\n");
+    warnx("i2c burst read fail");
     return AUX_STATUS_FAIL;
   }
 
